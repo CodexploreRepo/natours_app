@@ -11,8 +11,7 @@ app.use(express.json());
 const toursFileName = `${__dirname}/dev-data/data/tours-simple.json`;
 const tours = JSON.parse(fs.readFileSync(toursFileName));
 
-//Good Practice to Specify on API version on URL: /api/v1/
-app.get("/api/v1/tours", (req, res) => {
+const getAllTours = (req, res) => {
   res.status(200).json({
     status: "success",
     //Give the users more understanding of API response
@@ -21,9 +20,9 @@ app.get("/api/v1/tours", (req, res) => {
       tours, //equivalent to tours: tours,
     },
   });
-});
+};
 
-app.get("/api/v1/tours/:id", (req, res) => {
+const getTour = (req, res) => {
   // console.log(req.params);
   const id = req.params.id * 1; //convert req.params.id from String to Number
   const tour = tours.find((el) => el.id === id);
@@ -40,9 +39,8 @@ app.get("/api/v1/tours/:id", (req, res) => {
       tour,
     },
   });
-});
-
-app.post("/api/v1/tours", (req, res) => {
+};
+const createTour = (req, res) => {
   const newId = tours[tours.length - 1].id + 1;
   const newTour = Object.assign({ id: newId }, req.body);
 
@@ -57,10 +55,25 @@ app.post("/api/v1/tours", (req, res) => {
       },
     });
   });
-});
-//PUT: to receive the entire new updated object
-//PATCH: to receive only the property that we updated
-app.delete("/api/v1/tours/:id", (req, res) => {
+};
+
+const updateTour = (req, res) => {
+  if (req.params.id * 1 > tours.length) {
+    return res.status(404).json({
+      status: "fail",
+      message: "Invalid ID",
+    });
+  }
+
+  res.status(200).json({
+    status: "success",
+    data: {
+      tour: "<Updated tour here..>",
+    },
+  });
+};
+
+const deleteTour = (req, res) => {
   if (req.params.id * 1 > tours.length) {
     return res.status(404).json({
       status: "fail",
@@ -70,10 +83,24 @@ app.delete("/api/v1/tours/:id", (req, res) => {
 
   res.status(204).json({
     status: "success",
-    data: null,
   });
-});
+};
+//Good Practice to Specify on API version on URL: /api/v1/
+// app.get("/api/v1/tours", getAllTours);
+// app.get("/api/v1/tours/:id", getTour);
+app.post("/api/v1/tours", createTour);
+//PUT: to receive the entire new updated object
+//PATCH: to receive only the property that we updated
+app.patch("/api/v1/tours/:id", updateTour);
+app.delete("/api/v1/tours/:id", deleteTour);
 
+app.route("/api/v1/tours").get(getAllTours).post(createTour);
+
+app
+  .route("/api/v1/tours/:id")
+  .get(getTour)
+  .patch(updateTour)
+  .delete(deleteTour);
 const port = 3000;
 app.listen(port, () => {
   console.log(`App is running @ port ${port}...`);
