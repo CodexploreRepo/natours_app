@@ -7,8 +7,13 @@ const userRouter = require("./routes/userRoutes");
 app = express();
 
 //#1 - Middleware: added by using app.use()
-app.use(morgan("dev")); //To log req/res info
+
+if (process.env.NODE_ENV === "development") {
+  app.use(morgan("dev")); //To log req/res info
+}
+
 app.use(express.json()); //express.json() is the middleware to parse the comming-in req.body to JavaScript Object
+app.use(express.static(`${__dirname}/public`)); //To serve Static Files
 
 app.use((req, res, next) => {
   console.log("Hello From Middleware");
